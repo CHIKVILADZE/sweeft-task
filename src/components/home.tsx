@@ -73,11 +73,16 @@ const HomeComponent: React.FC = () => {
       <div>
         <h2>Search History</h2>
       </div>
-      <div>
-        <h2>Popular Images</h2>
+      <div className="border-2 border-green-700  flex flex-row flex-wrap gap-4 ">
+        <h2 className="text-3xl font-bold underline">Popular Images</h2>
         {photos.map((photo) => (
-          <div key={photo.id}>
-            <img src={photo.urls.regular} alt={photo.id} />
+          <div key={photo.id} className="">
+            <img
+              src={photo.urls.regular}
+              alt={photo.id}
+              width={200}
+              height={200}
+            />
           </div>
         ))}
       </div>
