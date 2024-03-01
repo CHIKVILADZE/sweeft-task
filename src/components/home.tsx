@@ -1,37 +1,31 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
+import { useScrollContext } from '../context/PhotoContext';
+import SearchComponent from './searchComponent';
 
-interface Photo {
-  id: string;
-  urls: {
-    regular: string;
-    full: string;
-  };
-  downloads: number;
-  likes: number;
-  views: number;
-}
-
-const apiKey = process.env.REACT_APP_API_KEY;
-const API_URL = `https://api.unsplash.com/photos?client_id=${apiKey}`;
-console.log(apiKey);
+import '../index.css';
+import PhotoModal from './modal';
 
 const HomeComponent: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [photos, setPhotos] = useState<Photo[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [page, setPage] = useState(1);
-  const [searchHistory, setSearchHistory] = useState<string[]>([]);
-  const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
+  const { fetchPopularPhotos, photos, handleScroll, accessKey } =
+    useScrollContext();
+  const [selectedPhoto, setSelectedPhoto] = useState<any>(null);
+  const [statistics, setStatistics] = useState<any | null>(null);
 
-  const fetchPopularPhotos = async () => {
-    const url = `${API_URL}&order_by=popular`;
+  const handleImageClick = async (photo: any) => {
+    setSelectedPhoto(photo);
     try {
-      const response = await axios.get<Photo[]>(url);
-      setPhotos(response.data);
-      setIsLoading(false);
+      const response = await axios.get(
+        `https://api.unsplash.com/photos/${photo.id}/statistics?client_id=${accessKey}`
+      );
+      const statisticsData = response.data;
+      setStatistics({
+        views: statisticsData.views.total,
+        downloads: statisticsData.downloads.total,
+      });
     } catch (error) {
-      console.error('Error fetching popular photos:', error);
+      console.error('Error fetching photo statistics:', error);
+      setStatistics(null);
     }
   };
 
@@ -39,110 +33,47 @@ const HomeComponent: React.FC = () => {
     fetchPopularPhotos();
   }, []);
 
-  const handleScroll = () => {
-    const scrollThreshold = 100;
-    const scrolledToBottom =
-      window.innerHeight + window.scrollY >=
-      document.documentElement.scrollHeight - scrollThreshold;
+  useEffect(() => {
+    handleScroll();
+    window.addEventListener('scroll', handleScroll);
 
-    if (scrolledToBottom && !isLoading) {
-      setIsLoading(true);
-      setPage((prevPage) => prevPage + 1);
-      fetchPopularPhotos();
-    }
-  };
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   useEffect(() => {
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [isLoading]);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [photos]);
 
-  const handleSearch = () => {
-    if (searchTerm.trim() !== '') {
-      fetchPopularPhotos();
-      setSearchHistory((prev) => [...prev, searchTerm]);
-    }
-  };
-
-  const fetchPhotoStatistics = async (photoId: string) => {
-    const url = `https://api.unsplash.com/photos/${photoId}/statistics?client_id=${apiKey}`;
-    try {
-      const response = await axios.get(url);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching photo statistics:', error);
-      return null;
-    }
-  };
-
-  const handleSearchHistoryClick = (term: string) => {
-    setSearchTerm(term);
-    fetchPopularPhotos();
-  };
-
-  const handleImageClick = async (photo: Photo) => {
-    setSelectedPhoto(photo);
-    const statistics = await fetchPhotoStatistics(photo.id);
-    if (statistics) {
-      console.log('Views:', statistics.views.total);
-      console.log('Downloads:', statistics.downloads.total);
-    }
-  };
-
-  const closeModal = () => {
-    setSelectedPhoto(null);
-  };
-
-  console.log('selectedPhoto', selectedPhoto);
+  console.log(selectedPhoto);
 
   return (
-    <div style={{ height: '100vh' }}>
+    <div>
       <div>
-        <input
-          type="text"
-          value={searchTerm}
-          className="border-2"
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Search..."
-        />
-        <button className="border-2" onClick={handleSearch}>
-          Search
-        </button>
+        {/* <SearchComponent fetchPopularPhotos={fetchPopularPhotos} /> */}
       </div>
-      <div>
-        <h2>Search History</h2>
-        <ul>
-          {searchHistory.map((term, index) => (
-            <li key={index} onClick={() => handleSearchHistoryClick(term)}>
-              {term}
-            </li>
-          ))}
-        </ul>
-      </div>
-      <div className="border-2 border-green-700  flex mt-4 ">
-        <h2 className="text-3xl font-bold underline">Popular Images</h2>
-        {photos.map((photo) => (
-          <div key={photo.id} className="">
+      <div className=" flex flex-wrap gap-4 justify-center mt-40 ">
+        {photos.map((photo, index) => (
+          <div
+            key={`${photo.id}-${index}`}
+            className="w-full   max-w-[500px] h-[333px]"
+          >
             <img
               src={photo.urls.regular}
               alt={photo.id}
-              width={200}
-              height={200}
               onClick={() => handleImageClick(photo)}
+              className="w-full h-full object-cover"
             />
           </div>
         ))}
       </div>
-      {selectedPhoto && (
-        <div className="modal  border-4 w-1/2 h-1/2 border-red-500">
-          <div className="modal-content w-1/2 h-1/2 border-4 border-green-500">
-            <img src={selectedPhoto.urls.full} alt={selectedPhoto.id} />
-            <p>Views: {selectedPhoto.views}</p>
-            <p>Likes: {selectedPhoto.likes}</p>
-            <button onClick={closeModal}>Close</button>
-          </div>
-        </div>
-      )}
+      <PhotoModal
+        setSelectedPhoto={setSelectedPhoto}
+        selectedPhoto={selectedPhoto}
+        setStatistics={setStatistics}
+        statistics={statistics}
+      />
     </div>
   );
 };
