@@ -8,6 +8,7 @@ interface ScrollContextProps {
   photos: any[];
   handleScroll: () => void;
   accessKey?: string;
+  setPhotos: React.Dispatch<React.SetStateAction<any[]>>;
 }
 
 const ScrollContext = createContext<ScrollContextProps | null>(null);
@@ -29,12 +30,13 @@ export const ScrollProvider: React.FC<{ children: React.ReactNode }> = ({
       const response = await axios.get(apiUrl, {
         params: {
           order_by: 'popular',
-          per_page: 8,
+          per_page: 5,
           page: page.current,
         },
       });
       const newPhotos = response.data;
       setPhotos((prevPhotos) => [...prevPhotos, ...newPhotos]);
+      console.log('Hello');
       setIsLoading(false);
       page.current++;
     } catch (error) {
@@ -59,6 +61,7 @@ export const ScrollProvider: React.FC<{ children: React.ReactNode }> = ({
         isLoading,
         fetchPopularPhotos,
         photos,
+        setPhotos,
         handleScroll,
         accessKey,
       }}
