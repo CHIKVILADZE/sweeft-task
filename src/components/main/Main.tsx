@@ -1,17 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useScrollContext } from '../../context/PhotoContext';
+import { useGalleryContext } from '../../context/PhotoContext';
 import SearchComponent from '../search/Search';
 
 import '../../index.css';
 import PhotoModal from '../modal/Modal';
 
 const HomeComponent: React.FC = () => {
-  const { fetchPopularPhotos, photos, handleScroll, accessKey, setPhotos } =
-    useScrollContext();
+  const {
+    fetchPopularPhotos,
+    photos: originalPhotos,
+    handleScroll,
+    accessKey,
+    handleSearch,
+    searchTerm,
+    setSearchedPhotos,
+    searchTerms,
+    searchedPhotos,
+  } = useGalleryContext();
   const [selectedPhoto, setSelectedPhoto] = useState<any>(null);
   const [statistics, setStatistics] = useState<any | null>(null);
-  const [searchTerms, setSearchTerms] = useState<string[]>([]);
 
   const handleImageClick = async (photo: any) => {
     setSelectedPhoto(photo);
@@ -35,77 +43,40 @@ const HomeComponent: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    if (searchTerm === '') {
+      setSearchedPhotos(originalPhotos);
+    }
+  }, [searchTerm, originalPhotos]);
+
+  console.log(selectedPhoto);
+
+  useEffect(() => {
     handleScroll();
     window.addEventListener('scroll', handleScroll);
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, []);
+  }, [searchTerm]);
 
-  console.log(selectedPhoto);
+  console.log('searchTerm', searchTerm);
 
-  const handleSearch = async (searchTerm: string) => {
-    try {
-      if (searchTerm.trim() === '') {
-        await fetchPopularPhotos();
-      } else {
-        const response = await axios.get(
-          `https://api.unsplash.com/search/photos`,
-          {
-            params: {
-              query: searchTerm,
-              per_page: 20,
-              client_id: process.env.REACT_APP_API_KEY,
-            },
-          }
-        );
-        const searchData = response.data;
-        setPhotos(searchData.results);
-        setSearchTerms((prevTerms) => [...prevTerms, searchTerm]);
-      }
-    } catch (error) {
-      console.error('Error searching photos:', error);
-    }
-  };
-
-  const handleSearchTermClick = async (term: string) => {
-    await handleSearch(term);
-  };
-
-  console.log('PHOTTOOS', photos);
   return (
     <div>
       <div className="mt-20 flex justify-center">
-        <SearchComponent
-          handleSearch={handleSearch}
-          setSearchTerms={setSearchTerms}
-        />
+        <SearchComponent />
       </div>
-      <div>
-        <h2>Search Historyjhjhjh</h2>
-        <ul>
-          {searchTerms.map((term, index) => (
-            <li
-              className="border-2 border-gray-600 w-40 p-1 rounded-xl cursor-pointer"
-              key={index}
-              onClick={() => handleSearchTermClick(term)}
-            >
-              {term}
-            </li>
-          ))}
-        </ul>
-      </div>
+
       <div className=" flex flex-wrap gap-4 justify-center mt-10 ">
-        {photos.map((photo, index) => (
+        {searchedPhotos.map((searchedPhoto, index) => (
           <div
-            key={`${photo.id}-${index}`}
+            key={`${searchedPhoto.id}-${index}`}
             className="w-full   max-w-[500px] h-[333px]"
           >
             <img
-              src={photo.urls.regular}
-              alt={photo.id}
-              onClick={() => handleImageClick(photo)}
+              src={searchedPhoto.urls.regular}
+              alt={searchedPhoto.id}
+              onClick={() => handleImageClick(searchedPhoto)}
               className="w-full h-full object-cover"
             />
           </div>

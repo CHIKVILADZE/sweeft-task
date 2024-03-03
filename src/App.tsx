@@ -11,12 +11,7 @@ function App() {
       <Header />
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route
-          path="/history"
-          element={
-            <History searchTerms={[]} setSearchTerm={(term: string) => {}} />
-          }
-        />
+        <Route path="/history" element={<History />} />
       </Routes>
     </BrowserRouter>
   );

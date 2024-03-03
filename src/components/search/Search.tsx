@@ -1,17 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useGalleryContext } from '../../context/PhotoContext';
 
-interface SearchComponentProps {
-  handleSearch: (searchTerm: string) => Promise<void>;
-  setSearchTerms: React.Dispatch<React.SetStateAction<string[]>>;
-}
-
-const SearchComponent: React.FC<SearchComponentProps> = ({
-  handleSearch,
-  setSearchTerms,
-}) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [delay, setDelay] = useState(1000); // Throttle delay
+const SearchComponent: React.FC = ({}) => {
+  const [delay, setDelay] = useState(1000);
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
+
+  const { handleSearch, searchTerm, setSearchTerm } = useGalleryContext();
 
   const delayedSearch = (term: string) => {
     if (timeoutId) {

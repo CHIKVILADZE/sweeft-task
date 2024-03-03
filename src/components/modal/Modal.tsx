@@ -16,8 +16,6 @@ export default function PhotoModal({
     setStatistics(null);
   };
 
-  console.log('statistics', statistics);
-
   return (
     <>
       {selectedPhoto && (
