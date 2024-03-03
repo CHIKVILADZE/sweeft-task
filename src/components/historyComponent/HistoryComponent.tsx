@@ -61,6 +61,7 @@ function HistoryComponent() {
       window.removeEventListener('scroll', handleScroll);
     };
   }, []);
+
   return (
     <div className="w-full flex ">
       <div className="w-1/3 mt-20 p-4 ">

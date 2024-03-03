@@ -20,7 +20,7 @@ interface GaleryContext {
 
 const GalleryContext = createContext<GaleryContext | null>(null);
 
-const accessKey = process.env.REACT_APP_API_KEY;
+const accessKey = '-x_Qs82taDBdtqh3XnlggA5g58UaRZu7IOIwKJ3I8-c';
 const apiUrl = `https://api.unsplash.com/photos?client_id=${accessKey}`;
 
 export const GalleryProvider: React.FC<{ children: React.ReactNode }> = ({
@@ -114,7 +114,6 @@ export const GalleryProvider: React.FC<{ children: React.ReactNode }> = ({
           );
           const searchData = response.data;
           setSearchedPhotos(searchData.results);
-          console.log('searchedPhotos', searchedPhotos);
           setSearchTerms((prevTerms) => [...prevTerms, searchTerm]);
 
           // Cache the search results

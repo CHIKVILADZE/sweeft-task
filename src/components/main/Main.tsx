@@ -48,14 +48,10 @@ const HomeComponent: React.FC = () => {
     }
   }, [searchTerm, originalPhotos]);
 
-  console.log(selectedPhoto);
-
   useEffect(() => {
     handleScroll();
     window.addEventListener('scroll', handleScroll);
   }, [searchTerms]);
-
-  console.log('searchTerm', searchTerm);
 
   return (
     <div>
