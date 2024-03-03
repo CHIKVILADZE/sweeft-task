@@ -23,7 +23,7 @@ function HistoryComponent() {
           {
             params: {
               query: searchTerm,
-              per_page: 20,
+              per_page: 100,
               client_id: process.env.REACT_APP_API_KEY,
             },
           }
@@ -43,11 +43,11 @@ function HistoryComponent() {
       window.innerHeight + window.scrollY >=
       document.body.scrollHeight - 100
     ) {
-      if (searchedPhotos.length > 0) {
-        // If there are searched photos, fetch more
-        handleSearchTermClick(searchTerm);
+      if (searchTerms.length > 0) {
+        if (searchTerm === searchTerms[searchTerms.length - 1]) {
+          handleSearchTermClick(searchTerm);
+        }
       } else {
-        // If there are no searched photos, fetch popular photos
         fetchPopularPhotos();
       }
     }
@@ -62,8 +62,8 @@ function HistoryComponent() {
     };
   }, []);
   return (
-    <div className="w-full flex">
-      <div className="w-1/3 border-2 border-red-600 mt-20 p-4">
+    <div className="w-full flex ">
+      <div className="w-1/3 mt-20 p-4 ">
         <table className="mt-4">
           <thead>
             <tr>
@@ -89,7 +89,7 @@ function HistoryComponent() {
           </tbody>
         </table>
       </div>
-      <div className="border-4 border-green-950 w-2/3 mt-20 flex flex-col justify-center">
+      <div className="0 w-2/3 mt-20 flex flex-wrap gap-2 justify-center ">
         {' '}
         {searchedPhotos.map((searchedPhoto, index) => (
           <div

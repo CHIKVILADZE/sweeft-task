@@ -1,12 +1,5 @@
 import axios from 'axios';
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-  useMemo,
-} from 'react';
+import React, { createContext, useContext, useRef, useState } from 'react';
 
 interface GaleryContext {
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
@@ -22,6 +15,7 @@ interface GaleryContext {
   searchTerms: string[];
   searchedPhotos: any[];
   setSearchedPhotos: React.Dispatch<React.SetStateAction<any[]>>;
+  setSearchTerms: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
 const GalleryContext = createContext<GaleryContext | null>(null);
@@ -38,7 +32,6 @@ export const GalleryProvider: React.FC<{ children: React.ReactNode }> = ({
   const [searchTerms, setSearchTerms] = useState<string[]>([]);
   const [searchedPhotos, setSearchedPhotos] = useState<any[]>([]);
 
-  // Cache for storing search results
   const searchCache = useRef<{ [key: string]: any[] }>({});
 
   const page = useRef<number>(1);
@@ -68,7 +61,34 @@ export const GalleryProvider: React.FC<{ children: React.ReactNode }> = ({
       window.innerHeight + window.scrollY >=
       document.body.scrollHeight - 100
     ) {
-      fetchPopularPhotos();
+      if (searchedPhotos.length > 0) {
+        // If there are searched photos, fetch more
+        fetchMoreSearchedPhotos();
+      } else {
+        // If there are no searched photos, fetch popular photos
+        fetchPopularPhotos();
+      }
+    }
+  };
+
+  const fetchMoreSearchedPhotos = async () => {
+    try {
+      const response = await axios.get(
+        `https://api.unsplash.com/search/photos`,
+        {
+          params: {
+            query: searchTerm,
+            per_page: 20,
+            client_id: process.env.REACT_APP_API_KEY,
+            page: page.current,
+          },
+        }
+      );
+      const searchData = response.data;
+      setSearchedPhotos((prevPhotos) => [...prevPhotos, ...searchData.results]);
+      page.current++;
+    } catch (error) {
+      console.error('Error fetching more searched photos:', error);
     }
   };
 
@@ -94,6 +114,7 @@ export const GalleryProvider: React.FC<{ children: React.ReactNode }> = ({
           );
           const searchData = response.data;
           setSearchedPhotos(searchData.results);
+          console.log('searchedPhotos', searchedPhotos);
           setSearchTerms((prevTerms) => [...prevTerms, searchTerm]);
 
           // Cache the search results
@@ -121,6 +142,7 @@ export const GalleryProvider: React.FC<{ children: React.ReactNode }> = ({
         searchTerms,
         searchedPhotos,
         setSearchedPhotos,
+        setSearchTerms,
       }}
     >
       {children}

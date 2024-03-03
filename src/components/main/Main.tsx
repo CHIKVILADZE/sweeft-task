@@ -53,11 +53,7 @@ const HomeComponent: React.FC = () => {
   useEffect(() => {
     handleScroll();
     window.addEventListener('scroll', handleScroll);
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, [searchTerm]);
+  }, [searchTerms]);
 
   console.log('searchTerm', searchTerm);
 
